@@ -144,7 +144,7 @@
              // ตั๋วต้องหยิบก่อนสร้าง URL — และหยิบครั้งเดียวเท่านั้น
             // ใส่ไปกับทุกทางเข้า (iframe / fallback เต็มแท็บ / ลิงก์กดเอง) เพราะถ้า iframe
             // ถูกบล็อก ผู้ใช้ยังต้องได้ SSO เหมือนกัน ตั๋วอายุ 2 นาที ครอบคลุม fallback 10 วิสบาย ๆ
-            let newweb = baseAppScript + page;
+            let newweb = baseAppScript + "?page=" + page;
             let finalUrl = buildUrl(newweb, { id: idApply, sso: takeSsoTicket() });
 
             let settled = false;
