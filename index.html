@@ -136,7 +136,7 @@
                     FBloading.innerHTML = `<iframe scrolling="auto" src="openExternalBrowser.mp4"></iframe>`
                 } else if(seconds <= 0){
                     clearInterval(x);
-                    window.location.href = 'https://pcschool-dev.github.io/check'
+                    window.location.href = 'https://pcschool-dev.github.io/point'
                 }  				
             }, 1000); // ทุก ๆ 1 วิ
         
@@ -144,7 +144,8 @@
              // ตั๋วต้องหยิบก่อนสร้าง URL — และหยิบครั้งเดียวเท่านั้น
             // ใส่ไปกับทุกทางเข้า (iframe / fallback เต็มแท็บ / ลิงก์กดเอง) เพราะถ้า iframe
             // ถูกบล็อก ผู้ใช้ยังต้องได้ SSO เหมือนกัน ตั๋วอายุ 2 นาที ครอบคลุม fallback 10 วิสบาย ๆ
-            let finalUrl = buildUrl(baseAppScript + page, { id: idApply, sso: takeSsoTicket() });
+            let newweb = baseAppScript + page;
+            let finalUrl = buildUrl(newweb, { id: idApply, sso: takeSsoTicket() });
 
             let settled = false;
 
