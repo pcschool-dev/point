@@ -79,6 +79,7 @@
         let param = new URLSearchParams(idUID);
         let id = param.get('fbclid');
         let idApply = param.get('id');
+        let page = param.get('page');
         
         // ต่อ query string ให้ถูกไวยากรณ์เสมอ ไม่ว่าจะมีพารามิเตอร์กี่ตัว แล้วปิดท้ายด้วย t= กัน cache
         // (ของเดิมชื่อ getNoCacheUrl ต่อ "?id=..." แล้วเติม "?" ซ้ำอีกตัว ทำให้ค่า id
@@ -139,6 +140,41 @@
                 }  				
             }, 1000); // ทุก ๆ 1 วิ
         
+        } else if (page) {
+             // ตั๋วต้องหยิบก่อนสร้าง URL — และหยิบครั้งเดียวเท่านั้น
+            // ใส่ไปกับทุกทางเข้า (iframe / fallback เต็มแท็บ / ลิงก์กดเอง) เพราะถ้า iframe
+            // ถูกบล็อก ผู้ใช้ยังต้องได้ SSO เหมือนกัน ตั๋วอายุ 2 นาที ครอบคลุม fallback 10 วิสบาย ๆ
+            let finalUrl = buildUrl(baseAppScript + page, { id: idApply, sso: takeSsoTicket() });
+
+            let settled = false;
+
+            // สำรอง: ถ้าฝังใน iframe ไม่ได้ (เช่น โดน X-Frame-Options: SAMEORIGIN
+            // ตอน Google เด้งไปหน้า login) onload จะไม่ยิงภายในเวลาที่กำหนด
+            // -> เปลี่ยนไปเปิดลิงก์ /exec ตรง ๆ ทั้งแท็บ เพื่อให้ล็อกอิน/ใช้งานต่อได้
+            let fallbackTimer = setTimeout(function () {
+                if (settled) return;
+                settled = true;
+                window.location.replace(finalUrl);
+            }, 10000); // เวลารอ iframe ก่อนตัดสินใจ fallback (มิลลิวินาที) — ปรับได้
+
+            // ใช้ iframe เป็นหลัก: ถ้าโหลดในกรอบสำเร็จ -> ยกเลิก fallback แล้วแสดงเต็มจอ
+            link.onload = function () {
+                if (settled) return;
+                settled = true;
+                clearTimeout(fallbackTimer);
+                hideLoader();
+                link.style.display = 'block';
+            };
+
+            link.src = finalUrl;
+
+            // ลิงก์สำรองแบบกดเอง — โผล่ขึ้นถ้ารอนานเกินไป (ตาข่ายกันพลาด
+            // เผื่อบางเบราว์เซอร์ตรวจการบล็อก iframe อัตโนมัติไม่ได้)
+            directLink.href = finalUrl;
+            setTimeout(function () {
+                if (!settled) directLink.style.display = 'inline-block';
+            }, 3000); // เวลาโผล่ลิงก์สำรอง (มิลลิวินาที) — ปรับได้
+            
         } else {
             // ตั๋วต้องหยิบก่อนสร้าง URL — และหยิบครั้งเดียวเท่านั้น
             // ใส่ไปกับทุกทางเข้า (iframe / fallback เต็มแท็บ / ลิงก์กดเอง) เพราะถ้า iframe
